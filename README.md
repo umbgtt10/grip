@@ -1,17 +1,17 @@
-# grip
+# cargo-grip
 
-A command-line search tool.
+A cargo subcommand for searching.
 
 ## Installation
 
 ```sh
-cargo install grip
+cargo install cargo-grip
 ```
 
 ## Usage
 
 ```sh
-grip [OPTIONS] <PATTERN> [PATH]...
+cargo grip [OPTIONS] <PATTERN> [PATH]...
 ```
 
 ## License

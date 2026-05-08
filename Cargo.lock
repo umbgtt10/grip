@@ -3,5 +3,5 @@
 version = 4
 
 [[package]]
-name = "grip"
+name = "cargo-grip"
 version = "0.1.0"

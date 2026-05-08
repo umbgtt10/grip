@@ -1,14 +1,14 @@
 [package]
-name = "grip"
+name = "cargo-grip"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.85"
-description = "A command-line search tool"
+description = "A cargo subcommand for searching"
 authors = ["Umberto Gotti <umberto.gotti@umbertogotti.dev>"]
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/umbgtt10/grip"
-keywords = ["search", "grep", "cli"]
-categories = ["command-line-utilities"]
+keywords = ["cargo", "subcommand", "search", "grep", "cli"]
+categories = ["development-tools::cargo-plugins", "command-line-utilities"]
 
 [dependencies]
