@@ -20,7 +20,7 @@ fn run_from_args_empty_dir_errors() {
     let dir = TempDir::new().unwrap();
 
     // Act
-    let result = run_from_args(vec!["cargo-grip", &dir.path().to_string_lossy()]);
+    let result = run_from_args(vec!["cargo-grip4rust", &dir.path().to_string_lossy()]);
 
     // Assert
     assert!(result.is_err());
@@ -33,7 +33,7 @@ fn run_from_args_valid_dir_succeeds() {
     write_project(&dir, "pub fn greet() -> &'static str { \"hello\" }\n");
 
     // Act
-    let result = run_from_args(vec!["cargo-grip", &dir.path().to_string_lossy()]);
+    let result = run_from_args(vec!["cargo-grip4rust", &dir.path().to_string_lossy()]);
 
     // Assert
     assert_eq!(result.unwrap(), ExitCode::SUCCESS);
@@ -47,7 +47,7 @@ fn run_from_args_threshold_passes() {
 
     // Act
     let result = run_from_args(vec![
-        "cargo-grip",
+        "cargo-grip4rust",
         &dir.path().to_string_lossy(),
         "--threshold",
         "0",
@@ -65,7 +65,7 @@ fn run_from_args_threshold_fails() {
 
     // Act
     let result = run_from_args(vec![
-        "cargo-grip",
+        "cargo-grip4rust",
         &dir.path().to_string_lossy(),
         "--threshold",
         "100",

@@ -7,7 +7,7 @@ use grip::args::Args;
 #[test]
 fn default_path_is_dot() {
     // Arrange & Act
-    let args = Args::parse_from_args(vec!["cargo-grip"]);
+    let args = Args::parse_from_args(vec!["cargo-grip4rust"]);
 
     // Assert
     assert_eq!(args.path.to_string_lossy(), ".");
@@ -16,7 +16,7 @@ fn default_path_is_dot() {
 #[test]
 fn json_flag_is_false_by_default() {
     // Arrange & Act
-    let args = Args::parse_from_args(vec!["cargo-grip"]);
+    let args = Args::parse_from_args(vec!["cargo-grip4rust"]);
 
     // Assert
     assert_eq!(args.json, false);
@@ -25,7 +25,7 @@ fn json_flag_is_false_by_default() {
 #[test]
 fn threshold_is_none_by_default() {
     // Arrange & Act
-    let args = Args::parse_from_args(vec!["cargo-grip"]);
+    let args = Args::parse_from_args(vec!["cargo-grip4rust"]);
 
     // Assert
     assert_eq!(args.threshold, None);
@@ -34,7 +34,7 @@ fn threshold_is_none_by_default() {
 #[test]
 fn path_arg_is_parsed() {
     // Arrange & Act
-    let args = Args::parse_from_args(vec!["cargo-grip", "some/path"]);
+    let args = Args::parse_from_args(vec!["cargo-grip4rust", "some/path"]);
 
     // Assert
     assert_eq!(args.path.to_string_lossy(), "some/path");
@@ -43,7 +43,7 @@ fn path_arg_is_parsed() {
 #[test]
 fn json_flag_is_parsed() {
     // Arrange & Act
-    let args = Args::parse_from_args(vec!["cargo-grip", "--json"]);
+    let args = Args::parse_from_args(vec!["cargo-grip4rust", "--json"]);
 
     // Assert
     assert_eq!(args.json, true);
@@ -52,7 +52,7 @@ fn json_flag_is_parsed() {
 #[test]
 fn threshold_is_parsed() {
     // Arrange & Act
-    let args = Args::parse_from_args(vec!["cargo-grip", "--threshold", "50"]);
+    let args = Args::parse_from_args(vec!["cargo-grip4rust", "--threshold", "50"]);
 
     // Assert
     assert_eq!(args.threshold, Some(50));
@@ -61,7 +61,7 @@ fn threshold_is_parsed() {
 #[test]
 fn min_score_alias_still_works() {
     // Arrange & Act
-    let args = Args::parse_from_args(vec!["cargo-grip", "--min-score", "30"]);
+    let args = Args::parse_from_args(vec!["cargo-grip4rust", "--min-score", "30"]);
 
     // Assert
     assert_eq!(args.threshold, Some(30));

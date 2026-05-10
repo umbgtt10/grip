@@ -8,7 +8,7 @@ use grip::config::Config;
 #[test]
 fn from_args_preserves_path() {
     // Arrange
-    let args = Args::parse_from_args(vec!["cargo-grip", "my-project"]);
+    let args = Args::parse_from_args(vec!["cargo-grip4rust", "my-project"]);
 
     // Act
     let config = Config::from_args(args);
@@ -20,7 +20,7 @@ fn from_args_preserves_path() {
 #[test]
 fn from_args_preserves_json() {
     // Arrange
-    let args = Args::parse_from_args(vec!["cargo-grip", "--json"]);
+    let args = Args::parse_from_args(vec!["cargo-grip4rust", "--json"]);
 
     // Act
     let config = Config::from_args(args);
@@ -32,7 +32,7 @@ fn from_args_preserves_json() {
 #[test]
 fn from_args_preserves_threshold() {
     // Arrange
-    let args = Args::parse_from_args(vec!["cargo-grip", "--threshold", "42"]);
+    let args = Args::parse_from_args(vec!["cargo-grip4rust", "--threshold", "42"]);
 
     // Act
     let config = Config::from_args(args);

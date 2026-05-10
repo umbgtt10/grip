@@ -13,7 +13,7 @@ fn binary_prints_error_on_empty_dir() {
     let dir = TempDir::new().unwrap();
 
     // Act
-    let assert = Command::cargo_bin("cargo-grip")
+    let assert = Command::cargo_bin("cargo-grip4rust")
         .unwrap()
         .arg(dir.path())
         .assert();
@@ -35,7 +35,7 @@ fn binary_prints_score_on_valid_dir() {
     .unwrap();
 
     // Act
-    let assert = Command::cargo_bin("cargo-grip")
+    let assert = Command::cargo_bin("cargo-grip4rust")
         .unwrap()
         .arg(dir.path())
         .assert();

@@ -1,8 +1,8 @@
-# cargo-grip
+# cargo-grip4rust
 
 **How much can tests grab onto your Rust codebase?**
 
-`cargo-grip` is a static analysis tool that measures **testability** — how many clean entry points, pure functions, and trait seams a codebase exposes for testing. It produces a single grip score (0–100) with a per-module breakdown.
+`cargo-grip4rust` is a static analysis tool that measures **testability** — how many clean entry points, pure functions, and trait seams a codebase exposes for testing. It produces a single grip score (0–100) with a per-module breakdown.
 
 ---
 
@@ -42,13 +42,13 @@ grip = (pure_ratio × 0.6 + public_ratio × 0.4) × 100
 ## Installation
 
 ```sh
-cargo install cargo-grip
+cargo install cargo-grip4rust
 ```
 
 ## Usage
 
 ```sh
-cargo grip [PATH]
+cargo grip4rust [PATH]
 ```
 
 **Arguments:**
@@ -62,7 +62,7 @@ cargo grip [PATH]
 | Option | Description |
 |---|---|
 | `--json` | Emit structured JSON output |
-| `--min-score N` | Exit non-zero if overall grip score < N (CI gate) |
+| `--threshold N` | Exit non-zero if overall grip score < N (CI gate). Alias: `--min-score` |
 | `-h`, `--help` | Print help |
 | `-V`, `--version` | Print version |
 
@@ -71,7 +71,7 @@ cargo grip [PATH]
 ## Output
 
 ```
-cargo-grip 0.1.1 -- my-crate
+cargo-grip4rust 0.1.3 -- my-crate
 ══════════════════════════════════════════════════════
 
 Overall grip score:    71 / 100
@@ -84,9 +84,12 @@ Per module:
   transport                      grip:  83   pure: 78.9%   pub:  3
   timer                          grip:  44   pure: 31.2%   pub:  1  ❌
   state                          grip:  91   pure: 88.3%   pub:  6
+
+Offenders (score < 50):
+  timer                          grip:  44  ❌
 ```
 
-JSON output (`--json`) includes the full breakdown and is suitable for CI pipelines, dashboards, and editor tooling.
+JSON output (`--json`) includes the full breakdown and `offenders` list for CI pipelines, dashboards, and editor tooling.
 
 ---
 
@@ -107,7 +110,7 @@ JSON output (`--json`) includes the full breakdown and is suitable for CI pipeli
 
 | Phase | What it adds | Version |
 |---|---|---|
-| **0** ✅ | Public surface + pure function ratio | v0.1.1 |
+| **0** ✅ | Public surface + pure function ratio | v0.1.3 |
 | 1 | Trait boundary ratio (seams) | v0.2.0 |
 | 2 | Hidden dependency detection | v0.3.0 |
 | 3 | Testability Index (`grip / braintax`) | v0.4.0 |
