@@ -2,12 +2,12 @@
 // Licensed under the MIT License
 // SPDX-License-Identifier: MIT
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::module_stats::ModuleStats;
 use crate::overall_stats::OverallStats;
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GripReport {
     pub version: String,
     pub target: String,

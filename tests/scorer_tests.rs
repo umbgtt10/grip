@@ -2,8 +2,14 @@
 // Licensed under the MIT License
 // SPDX-License-Identifier: MIT
 
+use std::collections::BTreeMap;
+
 use grip::item_counts::ItemCounts;
-use grip::scorer::{agg_modules, module_stats, score_counts};
+use grip::scorer::Scorer;
+
+fn scorer() -> Scorer {
+    Scorer::new()
+}
 
 #[test]
 fn perfect_grip() {
@@ -17,7 +23,7 @@ fn perfect_grip() {
         ..Default::default()
     };
 
-    let (score, pure, public) = score_counts(&counts);
+    let (score, pure, public) = scorer().score_counts(&counts);
 
     assert_eq!(score, 100);
     assert_eq!(pure, 1.0);
@@ -34,7 +40,7 @@ fn zero_grip() {
         ..Default::default()
     };
 
-    let (score, pure, public) = score_counts(&counts);
+    let (score, pure, public) = scorer().score_counts(&counts);
 
     assert_eq!(score, 0);
     assert_eq!(pure, 0.0);
@@ -45,7 +51,7 @@ fn zero_grip() {
 fn empty_module_gives_zero() {
     let counts = ItemCounts::default();
 
-    let (score, pure, public) = score_counts(&counts);
+    let (score, pure, public) = scorer().score_counts(&counts);
 
     assert_eq!(score, 0);
     assert_eq!(pure, 0.0);
@@ -77,7 +83,7 @@ fn module_aggregation() {
         ),
     ];
 
-    let (overall, modules) = agg_modules(files);
+    let (overall, modules) = scorer().agg_modules(files);
 
     assert_eq!(overall.total_functions, 2);
     assert_eq!(overall.pure_functions, 1);
@@ -86,8 +92,6 @@ fn module_aggregation() {
 
 #[test]
 fn module_stats_sorted() {
-    use std::collections::BTreeMap;
-
     let mut map = BTreeMap::new();
     map.insert(
         "alpha".to_string(),
@@ -99,7 +103,8 @@ fn module_stats_sorted() {
             ..Default::default()
         },
     );
-    let stats = module_stats(map);
+
+    let stats = scorer().module_stats(map);
 
     assert_eq!(stats.len(), 1);
     assert_eq!(stats[0].path, "alpha");

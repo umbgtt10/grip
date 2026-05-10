@@ -28,7 +28,7 @@ impl Walk {
             .filter(|entry| entry.path().extension() == Some("rs".as_ref()))
         {
             let path = entry.path();
-            if is_excluded(path, &self.root) {
+            if self.is_excluded(path) {
                 continue;
             }
             let source = fs::read_to_string(path)
@@ -37,19 +37,19 @@ impl Walk {
         }
         Ok(files)
     }
-}
 
-fn is_excluded(path: &Path, root: &Path) -> bool {
-    let normalized = path.to_string_lossy().replace('\\', "/");
-    if normalized.contains("/target/") || normalized.contains("/.git/") {
-        return true;
+    fn is_excluded(&self, path: &Path) -> bool {
+        let normalized = path.to_string_lossy().replace('\\', "/");
+        if normalized.contains("/target/") || normalized.contains("/.git/") {
+            return true;
+        }
+        let relative = match path.strip_prefix(&self.root) {
+            Ok(r) => r.to_string_lossy().replace('\\', "/"),
+            Err(_) => return false,
+        };
+        relative.starts_with("tests/")
+            || relative.starts_with("examples/")
+            || relative.starts_with("benches/")
+            || relative == "build.rs"
     }
-    let relative = match path.strip_prefix(root) {
-        Ok(r) => r.to_string_lossy().replace('\\', "/"),
-        Err(_) => return false,
-    };
-    relative.starts_with("tests/")
-        || relative.starts_with("examples/")
-        || relative.starts_with("benches/")
-        || relative == "build.rs"
 }

@@ -12,6 +12,7 @@ pub mod module_stats;
 pub mod overall_stats;
 pub mod reporter;
 pub mod scorer;
+pub mod unsafe_finder;
 pub mod walk;
 
 use std::process::ExitCode;
@@ -22,7 +23,7 @@ use clap::Parser;
 pub fn run() -> Result<ExitCode> {
     let args = args::Args::parse();
     let config = config::Config::from_args(args);
-    app::run(config)
+    app::App::new(config).run()
 }
 
 pub fn run_from_args<I, T>(args: I) -> Result<ExitCode>
@@ -32,5 +33,5 @@ where
 {
     let args = args::Args::parse_from_args(args);
     let config = config::Config::from_args(args);
-    app::run(config)
+    app::App::new(config).run()
 }
