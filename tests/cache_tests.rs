@@ -19,7 +19,7 @@ fn cache_hit_returns_same_counts() {
     let mut cache = Cache::new(dir.path());
 
     let source = fs::read_to_string(&file).unwrap();
-    let initial = grip::collector::Collector::collect(&source);
+    let (initial, _fns) = grip::collector::Collector::collect(&source, &file);
     cache.set(&file, &source, &initial);
 
     // Act
@@ -41,7 +41,7 @@ fn cache_miss_after_change() {
 
     let mut cache = Cache::new(dir.path());
     let source = fs::read_to_string(&file).unwrap();
-    let initial = grip::collector::Collector::collect(&source);
+    let (initial, _fns) = grip::collector::Collector::collect(&source, &file);
     cache.set(&file, &source, &initial);
 
     fs::write(&file, "fn hidden() -> i32 { 0 }").unwrap();

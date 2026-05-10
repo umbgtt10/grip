@@ -23,7 +23,7 @@ fn pure_function_is_counted() {
     let _file = write_file(&dir, "lib.rs", source);
 
     // Act
-    let counts = Collector::collect(source);
+    let (counts, _fns) = Collector::collect(source, &_file);
 
     // Assert
     assert_eq!(counts.total_functions, 1);
@@ -41,7 +41,7 @@ fn impure_function_is_not_counted_as_pure() {
     let _file = write_file(&dir, "lib.rs", source);
 
     // Act
-    let counts = Collector::collect(source);
+    let (counts, _fns) = Collector::collect(source, &_file);
 
     // Assert
     assert_eq!(counts.total_functions, 1);
@@ -56,7 +56,7 @@ fn unit_return_is_not_pure() {
     let _file = write_file(&dir, "lib.rs", source);
 
     // Act
-    let counts = Collector::collect(source);
+    let (counts, _fns) = Collector::collect(source, &_file);
 
     // Assert
     assert_eq!(counts.total_functions, 1);
@@ -71,7 +71,7 @@ fn unsafe_function_is_not_pure() {
     let _file = write_file(&dir, "lib.rs", source);
 
     // Act
-    let counts = Collector::collect(source);
+    let (counts, _fns) = Collector::collect(source, &_file);
 
     // Assert
     assert_eq!(counts.total_functions, 1);
@@ -86,7 +86,7 @@ fn private_function_is_not_public() {
     let _file = write_file(&dir, "lib.rs", source);
 
     // Act
-    let counts = Collector::collect(source);
+    let (counts, _fns) = Collector::collect(source, &_file);
 
     // Assert
     assert_eq!(counts.total_functions, 1);
@@ -109,7 +109,7 @@ pub trait T {}
     let _file = write_file(&dir, "lib.rs", source);
 
     // Act
-    let counts = Collector::collect(source);
+    let (counts, _fns) = Collector::collect(source, &_file);
 
     // Assert
     assert_eq!(counts.total_functions, 3);
@@ -135,7 +135,7 @@ mod tests {
     let _file = write_file(&dir, "lib.rs", source);
 
     // Act
-    let counts = Collector::collect(source);
+    let (counts, _fns) = Collector::collect(source, &_file);
 
     // Assert
     assert_eq!(counts.total_functions, 0);
@@ -150,7 +150,7 @@ fn pubcrate_is_public_item() {
     let _file = write_file(&dir, "lib.rs", source);
 
     // Act
-    let counts = Collector::collect(source);
+    let (counts, _fns) = Collector::collect(source, &_file);
 
     // Assert
     assert_eq!(counts.total_functions, 1);

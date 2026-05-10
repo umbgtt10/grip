@@ -2,36 +2,44 @@
 // Licensed under the MIT License
 // SPDX-License-Identifier: MIT
 
+use std::path::Path;
+
 use quote::ToTokens;
 use syn::visit::Visit;
 use syn::{Attribute, Item, ItemFn, Visibility};
 
+use crate::function_info::FunctionInfo;
 use crate::item_counts::ItemCounts;
 use crate::unsafe_finder::UnsafeFinder;
 
 #[derive(Debug)]
 pub struct Collector {
     counts: ItemCounts,
+    functions: Vec<FunctionInfo>,
+    current_file: String,
 }
 
 impl Collector {
-    fn new() -> Self {
+    fn new(file: String) -> Self {
         Self {
             counts: ItemCounts::default(),
+            functions: Vec::new(),
+            current_file: file,
         }
     }
 
-    pub fn collect(source: &str) -> ItemCounts {
+    pub fn collect(source: &str, path: &Path) -> (ItemCounts, Vec<FunctionInfo>) {
+        let file = path.to_string_lossy().replace('\\', "/");
         let syntax = match syn::parse_file(source) {
             Ok(s) => s,
-            Err(_) => return ItemCounts::default(),
+            Err(_) => return (ItemCounts::default(), Vec::new()),
         };
 
-        let mut collector = Self::new();
+        let mut collector = Self::new(file);
         for item in &syntax.items {
             collector.visit_item(item);
         }
-        collector.counts
+        (collector.counts, collector.functions)
     }
 }
 
@@ -50,6 +58,13 @@ impl<'ast> Visit<'ast> for Collector {
 
 impl Collector {
     fn visit_fn(&mut self, item_fn: &ItemFn) {
+        let name = item_fn.sig.ident.to_string();
+        let is_pub = matches!(
+            self.classify_visibility(&item_fn.vis),
+            VisibilityLevel::Pub | VisibilityLevel::PubCrate
+        );
+        let is_pure = self.is_probably_pure(item_fn);
+
         self.counts.total_functions += 1;
         self.counts.total_items += 1;
         match self.classify_visibility(&item_fn.vis) {
@@ -63,9 +78,16 @@ impl Collector {
             }
             _ => {}
         }
-        if self.is_probably_pure(item_fn) {
+        if is_pure {
             self.counts.pure_functions += 1;
         }
+
+        self.functions.push(FunctionInfo {
+            name,
+            file: self.current_file.clone(),
+            is_pure,
+            is_public: is_pub,
+        });
     }
 
     fn visit_struct(&mut self, item_struct: &syn::ItemStruct) {

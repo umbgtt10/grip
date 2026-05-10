@@ -20,6 +20,7 @@ fn sample() -> GripReport {
         modules: vec![],
         offenders: vec![],
         offender_threshold: 50,
+        functions: vec![],
     }
 }
 

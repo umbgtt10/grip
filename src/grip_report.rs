@@ -4,6 +4,7 @@
 
 use serde::{Deserialize, Serialize};
 
+use crate::function_info::FunctionInfo;
 use crate::module_stats::ModuleStats;
 use crate::offender::Offender;
 use crate::overall_stats::OverallStats;
@@ -16,4 +17,5 @@ pub struct GripReport {
     pub modules: Vec<ModuleStats>,
     pub offenders: Vec<Offender>,
     pub offender_threshold: u32,
+    pub functions: Vec<FunctionInfo>,
 }

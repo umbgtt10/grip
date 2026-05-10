@@ -5,7 +5,7 @@
 use std::fs;
 use std::process::ExitCode;
 
-use grip::run_from_args;
+use grip::app::run_from_args;
 use tempfile::TempDir;
 
 fn write_project(dir: &TempDir, source: &str) {

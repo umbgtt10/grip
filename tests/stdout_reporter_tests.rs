@@ -42,6 +42,7 @@ fn dummy_report() -> GripReport {
         ],
         offenders: vec![],
         offender_threshold: 50,
+        functions: vec![],
     }
 }
 
@@ -123,6 +124,7 @@ fn human_output_shows_offenders_section() {
             grip_score: 30,
         }],
         offender_threshold: 50,
+        functions: vec![],
         ..dummy_report()
     };
     let reporter = reporter(false);

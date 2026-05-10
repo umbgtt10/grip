@@ -5,7 +5,7 @@
 use std::process::ExitCode;
 
 fn main() -> ExitCode {
-    match grip::run() {
+    match grip::app::run() {
         Ok(ec) => ec,
         Err(e) => {
             eprintln!("error: {e}");

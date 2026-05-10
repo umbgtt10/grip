@@ -2,14 +2,17 @@
 // Licensed under the MIT License
 // SPDX-License-Identifier: MIT
 
+use std::ffi::OsString;
 use std::path::Path;
 use std::process::ExitCode;
 
 use anyhow::Result;
 
+use crate::args::Args;
 use crate::cache::Cache;
 use crate::collector::Collector;
 use crate::config::Config;
+use crate::function_info::FunctionInfo;
 use crate::grip_report::GripReport;
 use crate::item_counts::ItemCounts;
 use crate::overall_stats::OverallStats;
@@ -61,7 +64,7 @@ impl<W: Walk, S: Scorer, R: Reporter> App<W, S, R> {
 
     pub fn run(&self) -> Result<ExitCode> {
         let mut cache = Cache::new(&self.config.path);
-        let indexed = self.collect_files(&mut cache)?;
+        let (indexed, functions) = self.collect_files(&mut cache)?;
         cache.flush();
 
         if indexed.is_empty() {
@@ -71,28 +74,34 @@ impl<W: Walk, S: Scorer, R: Reporter> App<W, S, R> {
             ));
         }
 
-        let report = self.compute_report(indexed);
+        let report = self.compute_report(indexed, functions);
         self.handle_output(&report)
     }
 
-    fn collect_files(&self, cache: &mut Cache) -> Result<Vec<(String, ItemCounts)>> {
+    fn collect_files(
+        &self,
+        cache: &mut Cache,
+    ) -> Result<(Vec<(String, ItemCounts)>, Vec<FunctionInfo>)> {
         let files = self.walker.rust_files()?;
         let mut indexed = Vec::with_capacity(files.len());
+        let mut all_functions = Vec::new();
         for (path, source) in files {
             let module = self.module_from_path(&path);
-            let counts = if let Some(cached) = cache.get(&path) {
-                cached
-            } else {
-                let counts = Collector::collect(&source);
+            let (counts, functions) = Collector::collect(&source, &path);
+            all_functions.extend(functions);
+            if cache.get(&path).is_none() {
                 cache.set(&path, &source, &counts);
-                counts
-            };
+            }
             indexed.push((module, counts));
         }
-        Ok(indexed)
+        Ok((indexed, all_functions))
     }
 
-    fn compute_report(&self, indexed: Vec<(String, ItemCounts)>) -> GripReport {
+    fn compute_report(
+        &self,
+        indexed: Vec<(String, ItemCounts)>,
+        functions: Vec<FunctionInfo>,
+    ) -> GripReport {
         let (overall_counts, modules) = self.scorer.agg_modules(indexed);
         let (grip_score, pure_ratio, public_ratio) = self.scorer.score_counts(&overall_counts);
         let overall = OverallStats {
@@ -127,6 +136,7 @@ impl<W: Walk, S: Scorer, R: Reporter> App<W, S, R> {
             modules: module_stats,
             offenders,
             offender_threshold,
+            functions,
         }
     }
 
@@ -152,4 +162,20 @@ impl<W: Walk, S: Scorer, R: Reporter> App<W, S, R> {
             ".".to_string()
         }
     }
+}
+
+pub fn run() -> Result<ExitCode> {
+    let args = Args::parse_cargo();
+    let config = Config::from_args(args);
+    App::new(config).run()
+}
+
+pub fn run_from_args<I, T>(args: I) -> Result<ExitCode>
+where
+    I: IntoIterator<Item = T>,
+    T: Into<OsString> + Clone,
+{
+    let args = Args::parse_from_args(args);
+    let config = Config::from_args(args);
+    App::new(config).run()
 }
