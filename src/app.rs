@@ -54,6 +54,11 @@ impl<W: Walk, S: Scorer, R: Reporter> App<W, S, R> {
         }
     }
 
+    #[must_use]
+    pub fn reporter(&self) -> &R {
+        &self.reporter
+    }
+
     pub fn run(&self) -> Result<ExitCode> {
         let mut cache = Cache::new(&self.config.path);
         let indexed = self.collect_files(&mut cache)?;

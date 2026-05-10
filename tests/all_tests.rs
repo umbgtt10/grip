@@ -8,6 +8,7 @@ mod cache_tests;
 mod collector_tests;
 mod config_tests;
 mod default_scorer_tests;
+mod fixture_tests;
 mod fs_walk_tests;
 mod grip_report_tests;
 mod item_counts_tests;
