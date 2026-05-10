@@ -17,8 +17,8 @@ pub struct Args {
     #[arg(long)]
     pub json: bool,
 
-    #[arg(long)]
-    pub min_score: Option<u32>,
+    #[arg(long, alias = "min-score")]
+    pub threshold: Option<u32>,
 }
 
 impl Args {

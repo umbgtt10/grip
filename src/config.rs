@@ -10,7 +10,7 @@ use crate::args::Args;
 pub struct Config {
     pub path: PathBuf,
     pub json: bool,
-    pub min_score: Option<u32>,
+    pub threshold: Option<u32>,
 }
 
 impl Config {
@@ -19,7 +19,7 @@ impl Config {
         Self {
             path: args.path,
             json: args.json,
-            min_score: args.min_score,
+            threshold: args.threshold,
         }
     }
 }

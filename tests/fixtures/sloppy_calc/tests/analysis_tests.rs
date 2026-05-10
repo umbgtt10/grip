@@ -40,7 +40,7 @@ fn analyze() -> serde_json::Value {
     let config = Config {
         path: fixture_path,
         json: true,
-        min_score: None,
+        threshold: None,
     };
     let reporter = CaptureReporter {
         captured: RefCell::new(String::new()),

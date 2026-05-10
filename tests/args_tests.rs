@@ -23,12 +23,12 @@ fn json_flag_is_false_by_default() {
 }
 
 #[test]
-fn min_score_is_none_by_default() {
+fn threshold_is_none_by_default() {
     // Arrange & Act
     let args = Args::parse_from_args(vec!["cargo-grip"]);
 
     // Assert
-    assert_eq!(args.min_score, None);
+    assert_eq!(args.threshold, None);
 }
 
 #[test]
@@ -50,10 +50,19 @@ fn json_flag_is_parsed() {
 }
 
 #[test]
-fn min_score_is_parsed() {
+fn threshold_is_parsed() {
     // Arrange & Act
-    let args = Args::parse_from_args(vec!["cargo-grip", "--min-score", "50"]);
+    let args = Args::parse_from_args(vec!["cargo-grip", "--threshold", "50"]);
 
     // Assert
-    assert_eq!(args.min_score, Some(50));
+    assert_eq!(args.threshold, Some(50));
+}
+
+#[test]
+fn min_score_alias_still_works() {
+    // Arrange & Act
+    let args = Args::parse_from_args(vec!["cargo-grip", "--min-score", "30"]);
+
+    // Assert
+    assert_eq!(args.threshold, Some(30));
 }

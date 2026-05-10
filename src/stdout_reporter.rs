@@ -73,6 +73,19 @@ impl StdoutReporter {
             lines.push(self.render_module_line(module));
         }
 
+        if !report.offenders.is_empty() {
+            lines.push(format!(
+                "\nOffenders (score < {}):",
+                report.offender_threshold
+            ));
+            for offender in &report.offenders {
+                lines.push(format!(
+                    "  {:<30}  grip: {:>3}  ❌",
+                    offender.path, offender.grip_score,
+                ));
+            }
+        }
+
         lines.join("\n")
     }
 

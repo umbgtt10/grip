@@ -110,16 +110,28 @@ impl<W: Walk, S: Scorer, R: Reporter> App<W, S, R> {
             .and_then(|n| n.to_str())
             .unwrap_or(".")
             .to_string();
+        let module_stats = self.scorer.module_stats(modules);
+        let offender_threshold = self.config.threshold.unwrap_or(50);
+        let offenders = module_stats
+            .iter()
+            .filter(|m| m.grip_score < offender_threshold)
+            .map(|m| crate::offender::Offender {
+                path: m.path.clone(),
+                grip_score: m.grip_score,
+            })
+            .collect();
         GripReport {
             version: env!("CARGO_PKG_VERSION").to_string(),
             target,
             overall,
-            modules: self.scorer.module_stats(modules),
+            modules: module_stats,
+            offenders,
+            offender_threshold,
         }
     }
 
     fn handle_output(&self, report: &GripReport) -> Result<ExitCode> {
-        if let Some(min) = self.config.min_score {
+        if let Some(min) = self.config.threshold {
             return Ok(if report.overall.grip_score >= min {
                 ExitCode::SUCCESS
             } else {

@@ -40,6 +40,8 @@ fn dummy_report() -> GripReport {
                 public_ratio: 0.5,
             },
         ],
+        offenders: vec![],
+        offender_threshold: 50,
     }
 }
 
@@ -101,4 +103,34 @@ fn json_output_has_version() {
     // Assert
     let parsed: serde_json::Value = serde_json::from_str(&out).unwrap();
     assert_eq!(parsed["version"], "0.1.0");
+}
+
+#[test]
+fn human_output_shows_offenders_section() {
+    // Arrange
+    let report = GripReport {
+        modules: vec![ModuleStats {
+            path: "bad_mod".to_string(),
+            grip_score: 30,
+            pure_ratio: 0.3,
+            public_items: 1,
+            total_functions: 5,
+            pure_functions: 1,
+            public_ratio: 0.2,
+        }],
+        offenders: vec![grip::offender::Offender {
+            path: "bad_mod".to_string(),
+            grip_score: 30,
+        }],
+        offender_threshold: 50,
+        ..dummy_report()
+    };
+    let reporter = reporter(false);
+
+    // Act
+    let out = reporter.render(&report).unwrap();
+
+    // Assert
+    assert!(out.contains("Offenders"));
+    assert!(out.contains("bad_mod"));
 }

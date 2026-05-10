@@ -16,7 +16,7 @@ fn run_on_empty_dir_errors() {
     let config = Config {
         path: dir.path().to_path_buf(),
         json: false,
-        min_score: None,
+        threshold: None,
     };
     let app = App::new(config);
 
@@ -41,7 +41,7 @@ fn run_on_valid_dir_succeeds() {
     let config = Config {
         path: dir.path().to_path_buf(),
         json: false,
-        min_score: None,
+        threshold: None,
     };
     let app = App::new(config);
 

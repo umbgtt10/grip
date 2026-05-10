@@ -12,6 +12,7 @@ pub mod fs_walk;
 pub mod grip_report;
 pub mod item_counts;
 pub mod module_stats;
+pub mod offender;
 pub mod overall_stats;
 pub mod stdout_reporter;
 pub mod traits;

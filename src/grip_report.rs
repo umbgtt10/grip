@@ -5,6 +5,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::module_stats::ModuleStats;
+use crate::offender::Offender;
 use crate::overall_stats::OverallStats;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -13,4 +14,6 @@ pub struct GripReport {
     pub target: String,
     pub overall: OverallStats,
     pub modules: Vec<ModuleStats>,
+    pub offenders: Vec<Offender>,
+    pub offender_threshold: u32,
 }

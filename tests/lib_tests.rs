@@ -40,7 +40,7 @@ fn run_from_args_valid_dir_succeeds() {
 }
 
 #[test]
-fn run_from_args_min_score_passes() {
+fn run_from_args_threshold_passes() {
     // Arrange
     let dir = TempDir::new().unwrap();
     write_project(&dir, "pub fn greet() -> &'static str { \"hello\" }\n");
@@ -49,7 +49,7 @@ fn run_from_args_min_score_passes() {
     let result = run_from_args(vec![
         "cargo-grip",
         &dir.path().to_string_lossy(),
-        "--min-score",
+        "--threshold",
         "0",
     ]);
 
@@ -58,7 +58,7 @@ fn run_from_args_min_score_passes() {
 }
 
 #[test]
-fn run_from_args_min_score_fails() {
+fn run_from_args_threshold_fails() {
     // Arrange
     let dir = TempDir::new().unwrap();
     write_project(&dir, "fn greet() -> &'static str { \"hello\" }\n");
@@ -67,7 +67,7 @@ fn run_from_args_min_score_fails() {
     let result = run_from_args(vec![
         "cargo-grip",
         &dir.path().to_string_lossy(),
-        "--min-score",
+        "--threshold",
         "100",
     ]);
 

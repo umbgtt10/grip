@@ -18,6 +18,8 @@ fn sample() -> GripReport {
             public_ratio: 0.5,
         },
         modules: vec![],
+        offenders: vec![],
+        offender_threshold: 50,
     }
 }
 

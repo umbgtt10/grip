@@ -30,13 +30,13 @@ fn from_args_preserves_json() {
 }
 
 #[test]
-fn from_args_preserves_min_score() {
+fn from_args_preserves_threshold() {
     // Arrange
-    let args = Args::parse_from_args(vec!["cargo-grip", "--min-score", "42"]);
+    let args = Args::parse_from_args(vec!["cargo-grip", "--threshold", "42"]);
 
     // Act
     let config = Config::from_args(args);
 
     // Assert
-    assert_eq!(config.min_score, Some(42));
+    assert_eq!(config.threshold, Some(42));
 }
