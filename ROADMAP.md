@@ -1,9 +1,9 @@
 # grip — Roadmap
 
-**Crate:** `grip`  
+**Crate:** `cargo-grip`  
 **License:** MIT  
 **Last updated:** 2026-05-10  
-**Current status:** Phase 0 — In progress  
+**Current status:** Phase 0 — ✅ Complete (v0.1.1 published)  
 
 ---
 
@@ -143,9 +143,9 @@ of which reduce the value of the test.
 
 ## Phase 0 — Public surface and pure function ratio
 
-**Status:** In progress  
+**Status:** ✅ Complete  
 **Target:** 2 hours  
-**Deliverable:** `grip` v0.1.0 on crates.io  
+**Deliverable:** `cargo-grip` v0.1.1 on crates.io  
 
 **The question Phase 0 answers:**
 
@@ -565,7 +565,7 @@ an informational note. Compatible with GitHub Code Scanning, VS Code, and Zed.
 
 | Phase | Deliverable | Key addition | Target | Status |
 |---|---|---|---|---|
-| 0 | v0.1.0 | Public surface + pure function ratio | 2 hours | In progress |
+| 0 | v0.1.1 | Public surface + pure function ratio | 2 hours | ✅ Complete |
 | 1 | v0.2.0 | Trait boundary ratio | 4–6 hours | Planned |
 | 2 | v0.3.0 | Hidden dependency detection | 6–8 hours | Planned |
 | 3 | v0.4.0 | Testability Index (`grip / braintax`) | 4–6 hours | Planned |
