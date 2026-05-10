@@ -33,6 +33,81 @@ impl Collector {
         }
         collector.counts
     }
+}
+
+impl<'ast> Visit<'ast> for Collector {
+    fn visit_item(&mut self, item: &'ast Item) {
+        match item {
+            Item::Fn(item_fn) if !self.has_test_attr(&item_fn.attrs) => self.visit_fn(item_fn),
+            Item::Struct(item_struct) => self.visit_struct(item_struct),
+            Item::Trait(item_trait) => self.visit_trait(item_trait),
+            Item::Enum(item_enum) => self.visit_enum(item_enum),
+            Item::Mod(item_mod) if !self.has_test_attr(&item_mod.attrs) => self.visit_mod(item_mod),
+            _ => {}
+        }
+    }
+}
+
+impl Collector {
+    fn visit_fn(&mut self, item_fn: &ItemFn) {
+        self.counts.total_functions += 1;
+        self.counts.total_items += 1;
+        match self.classify_visibility(&item_fn.vis) {
+            VisibilityLevel::Pub => {
+                self.counts.public_functions += 1;
+                self.counts.public_items += 1;
+            }
+            VisibilityLevel::PubCrate => {
+                self.counts.pubcrate_functions += 1;
+                self.counts.public_items += 1;
+            }
+            _ => {}
+        }
+        if self.is_probably_pure(item_fn) {
+            self.counts.pure_functions += 1;
+        }
+    }
+
+    fn visit_struct(&mut self, item_struct: &syn::ItemStruct) {
+        self.counts.total_items += 1;
+        if matches!(
+            self.classify_visibility(&item_struct.vis),
+            VisibilityLevel::Pub | VisibilityLevel::PubCrate
+        ) {
+            self.counts.public_structs += 1;
+            self.counts.public_items += 1;
+        }
+    }
+
+    fn visit_trait(&mut self, item_trait: &syn::ItemTrait) {
+        self.counts.total_items += 1;
+        if matches!(
+            self.classify_visibility(&item_trait.vis),
+            VisibilityLevel::Pub | VisibilityLevel::PubCrate
+        ) {
+            self.counts.public_traits += 1;
+            self.counts.public_items += 1;
+        }
+    }
+
+    fn visit_enum(&mut self, item_enum: &syn::ItemEnum) {
+        self.counts.total_items += 1;
+        if matches!(
+            self.classify_visibility(&item_enum.vis),
+            VisibilityLevel::Pub | VisibilityLevel::PubCrate
+        ) {
+            self.counts.public_enums += 1;
+            self.counts.public_items += 1;
+        }
+    }
+
+    fn visit_mod(&mut self, item_mod: &syn::ItemMod) {
+        if let Some((_, items)) = &item_mod.content {
+            for inner in items {
+                self.visit_item(inner);
+            }
+        }
+    }
 
     fn classify_visibility(&self, vis: &Visibility) -> VisibilityLevel {
         match vis {
@@ -110,67 +185,4 @@ enum VisibilityLevel {
     Private,
     PubCrate,
     Pub,
-}
-
-impl<'ast> Visit<'ast> for Collector {
-    fn visit_item(&mut self, item: &'ast Item) {
-        match item {
-            Item::Fn(item_fn) if !self.has_test_attr(&item_fn.attrs) => {
-                self.counts.total_functions += 1;
-                self.counts.total_items += 1;
-                match self.classify_visibility(&item_fn.vis) {
-                    VisibilityLevel::Pub => {
-                        self.counts.public_functions += 1;
-                        self.counts.public_items += 1;
-                    }
-                    VisibilityLevel::PubCrate => {
-                        self.counts.pubcrate_functions += 1;
-                        self.counts.public_items += 1;
-                    }
-                    _ => {}
-                }
-                if self.is_probably_pure(item_fn) {
-                    self.counts.pure_functions += 1;
-                }
-            }
-            Item::Struct(item_struct) => {
-                self.counts.total_items += 1;
-                if matches!(
-                    self.classify_visibility(&item_struct.vis),
-                    VisibilityLevel::Pub | VisibilityLevel::PubCrate
-                ) {
-                    self.counts.public_structs += 1;
-                    self.counts.public_items += 1;
-                }
-            }
-            Item::Trait(item_trait) => {
-                self.counts.total_items += 1;
-                if matches!(
-                    self.classify_visibility(&item_trait.vis),
-                    VisibilityLevel::Pub | VisibilityLevel::PubCrate
-                ) {
-                    self.counts.public_traits += 1;
-                    self.counts.public_items += 1;
-                }
-            }
-            Item::Enum(item_enum) => {
-                self.counts.total_items += 1;
-                if matches!(
-                    self.classify_visibility(&item_enum.vis),
-                    VisibilityLevel::Pub | VisibilityLevel::PubCrate
-                ) {
-                    self.counts.public_enums += 1;
-                    self.counts.public_items += 1;
-                }
-            }
-            Item::Mod(item_mod) if !self.has_test_attr(&item_mod.attrs) => {
-                if let Some((_, items)) = &item_mod.content {
-                    for inner in items {
-                        self.visit_item(inner);
-                    }
-                }
-            }
-            _ => {}
-        }
-    }
 }

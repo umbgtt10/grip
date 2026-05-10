@@ -4,7 +4,8 @@
 
 use std::fs;
 
-use grip::walk::Walk;
+use grip::fs_walk::FsWalk;
+use grip::traits::walk::Walk;
 use tempfile::TempDir;
 
 #[test]
@@ -16,7 +17,7 @@ fn finds_rust_files() {
     fs::write(src.join("main.rs"), "fn main() {}").unwrap();
 
     // Act
-    let walk = Walk::new(dir.path());
+    let walk = FsWalk::new(dir.path());
     let files = walk.rust_files().unwrap();
 
     // Assert
@@ -35,7 +36,7 @@ fn skips_tests_directory() {
     fs::write(tests.join("integration.rs"), "").unwrap();
 
     // Act
-    let walk = Walk::new(dir.path());
+    let walk = FsWalk::new(dir.path());
     let files = walk.rust_files().unwrap();
 
     // Assert
@@ -53,7 +54,7 @@ fn skips_examples_and_benches() {
     fs::write(dir.path().join("benches/bench.rs"), "").unwrap();
 
     // Act
-    let walk = Walk::new(dir.path());
+    let walk = FsWalk::new(dir.path());
     let files = walk.rust_files().unwrap();
 
     // Assert
@@ -67,7 +68,7 @@ fn skips_build_rs() {
     fs::write(dir.path().join("build.rs"), "").unwrap();
 
     // Act
-    let walk = Walk::new(dir.path());
+    let walk = FsWalk::new(dir.path());
     let files = walk.rust_files().unwrap();
 
     // Assert

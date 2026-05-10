@@ -4,16 +4,18 @@
 
 pub mod app;
 pub mod args;
+pub mod cache;
 pub mod collector;
 pub mod config;
+pub mod default_scorer;
+pub mod fs_walk;
 pub mod grip_report;
 pub mod item_counts;
 pub mod module_stats;
 pub mod overall_stats;
-pub mod reporter;
-pub mod scorer;
+pub mod stdout_reporter;
+pub mod traits;
 pub mod unsafe_finder;
-pub mod walk;
 
 use std::process::ExitCode;
 

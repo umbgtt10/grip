@@ -8,19 +8,22 @@ use anyhow::Result;
 
 use crate::grip_report::GripReport;
 use crate::module_stats::ModuleStats;
+use crate::traits::reporter::Reporter;
 
 #[derive(Debug, Clone)]
-pub struct Reporter {
+pub struct StdoutReporter {
     json: bool,
 }
 
-impl Reporter {
+impl StdoutReporter {
     #[must_use]
     pub fn new(json: bool) -> Self {
         Self { json }
     }
+}
 
-    pub fn render(&self, report: &GripReport) -> Result<String> {
+impl Reporter for StdoutReporter {
+    fn render(&self, report: &GripReport) -> Result<String> {
         if self.json {
             Ok(serde_json::to_string_pretty(report)?)
         } else {
@@ -28,13 +31,15 @@ impl Reporter {
         }
     }
 
-    pub fn write(&self, report: &GripReport) -> Result<()> {
+    fn write(&self, report: &GripReport) -> Result<()> {
         let out = self.render(report)?;
         io::stdout().write_all(out.as_bytes())?;
         io::stdout().write_all(b"\n")?;
         Ok(())
     }
+}
 
+impl StdoutReporter {
     fn render_human(&self, report: &GripReport) -> String {
         let mut lines = Vec::new();
         let target = &report.target;

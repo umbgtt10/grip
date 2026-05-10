@@ -4,11 +4,12 @@
 
 use std::collections::BTreeMap;
 
+use grip::default_scorer::DefaultScorer;
 use grip::item_counts::ItemCounts;
-use grip::scorer::Scorer;
+use grip::traits::scorer::Scorer;
 
-fn scorer() -> Scorer {
-    Scorer::new()
+fn scorer() -> DefaultScorer {
+    DefaultScorer::new()
 }
 
 #[test]

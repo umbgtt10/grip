@@ -5,7 +5,8 @@
 use grip::grip_report::GripReport;
 use grip::module_stats::ModuleStats;
 use grip::overall_stats::OverallStats;
-use grip::reporter::Reporter;
+use grip::stdout_reporter::StdoutReporter;
+use grip::traits::reporter::Reporter;
 
 fn dummy_report() -> GripReport {
     GripReport {
@@ -42,8 +43,8 @@ fn dummy_report() -> GripReport {
     }
 }
 
-fn reporter(json: bool) -> Reporter {
-    Reporter::new(json)
+fn reporter(json: bool) -> StdoutReporter {
+    StdoutReporter::new(json)
 }
 
 #[test]

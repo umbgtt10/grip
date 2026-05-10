@@ -8,18 +8,22 @@ use std::path::{Path, PathBuf};
 use anyhow::{Context, Result};
 use walkdir::WalkDir;
 
+use crate::traits::walk::Walk;
+
 #[derive(Debug, Clone)]
-pub struct Walk {
-    pub root: PathBuf,
+pub struct FsWalk {
+    root: PathBuf,
 }
 
-impl Walk {
+impl FsWalk {
     #[must_use]
     pub fn new(path: impl Into<PathBuf>) -> Self {
         Self { root: path.into() }
     }
+}
 
-    pub fn rust_files(&self) -> Result<Vec<(PathBuf, String)>> {
+impl Walk for FsWalk {
+    fn rust_files(&self) -> Result<Vec<(PathBuf, String)>> {
         let mut files = Vec::new();
         for entry in WalkDir::new(&self.root)
             .into_iter()
@@ -37,7 +41,9 @@ impl Walk {
         }
         Ok(files)
     }
+}
 
+impl FsWalk {
     fn is_excluded(&self, path: &Path) -> bool {
         let normalized = path.to_string_lossy().replace('\\', "/");
         if normalized.contains("/target/") || normalized.contains("/.git/") {

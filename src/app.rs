@@ -7,47 +7,87 @@ use std::process::ExitCode;
 
 use anyhow::Result;
 
+use crate::cache::Cache;
 use crate::collector::Collector;
 use crate::config::Config;
 use crate::grip_report::GripReport;
+use crate::item_counts::ItemCounts;
 use crate::overall_stats::OverallStats;
-use crate::reporter::Reporter;
-use crate::scorer::Scorer;
-use crate::walk::Walk;
+use crate::traits::reporter::Reporter;
+use crate::traits::scorer::Scorer;
+use crate::traits::walk::Walk;
 
 #[derive(Debug)]
-pub struct App {
-    walker: Walk,
-    scorer: Scorer,
-    reporter: Reporter,
+pub struct App<W: Walk, S: Scorer, R: Reporter> {
+    walker: W,
+    scorer: S,
+    reporter: R,
     config: Config,
 }
 
-impl App {
+impl
+    App<
+        crate::fs_walk::FsWalk,
+        crate::default_scorer::DefaultScorer,
+        crate::stdout_reporter::StdoutReporter,
+    >
+{
     #[must_use]
     pub fn new(config: Config) -> Self {
         Self {
-            walker: Walk::new(&config.path),
-            scorer: Scorer::new(),
-            reporter: Reporter::new(config.json),
+            walker: crate::fs_walk::FsWalk::new(&config.path),
+            scorer: crate::default_scorer::DefaultScorer::new(),
+            reporter: crate::stdout_reporter::StdoutReporter::new(config.json),
+            config,
+        }
+    }
+}
+
+impl<W: Walk, S: Scorer, R: Reporter> App<W, S, R> {
+    #[must_use]
+    pub fn with_deps(walker: W, scorer: S, reporter: R, config: Config) -> Self {
+        Self {
+            walker,
+            scorer,
+            reporter,
             config,
         }
     }
 
     pub fn run(&self) -> Result<ExitCode> {
-        let files = self.walker.rust_files()?;
-        let mut indexed = Vec::with_capacity(files.len());
-        for (path, source) in files {
-            let module = self.module_from_path(&path);
-            let counts = Collector::collect(&source);
-            indexed.push((module, counts));
-        }
+        let mut cache = Cache::new(&self.config.path);
+        let indexed = self.collect_files(&mut cache)?;
+        cache.flush();
+
         if indexed.is_empty() {
             return Err(anyhow::anyhow!(
                 "no Rust source files found in {}",
                 self.config.path.display()
             ));
         }
+
+        let report = self.compute_report(indexed);
+        self.handle_output(&report)
+    }
+
+    fn collect_files(&self, cache: &mut Cache) -> Result<Vec<(String, ItemCounts)>> {
+        let files = self.walker.rust_files()?;
+        let mut indexed = Vec::with_capacity(files.len());
+        for (path, source) in files {
+            let module = self.module_from_path(&path);
+            let counts = if let Some(cached) = cache.get(&path) {
+                cached
+            } else {
+                let counts = Collector::collect(&source);
+                cache.set(&path, &source, &counts);
+                counts
+            };
+            indexed.push((module, counts));
+        }
+        Ok(indexed)
+    }
+
+    fn compute_report(&self, indexed: Vec<(String, ItemCounts)>) -> GripReport {
         let (overall_counts, modules) = self.scorer.agg_modules(indexed);
         let (grip_score, pure_ratio, public_ratio) = self.scorer.score_counts(&overall_counts);
         let overall = OverallStats {
@@ -65,20 +105,23 @@ impl App {
             .and_then(|n| n.to_str())
             .unwrap_or(".")
             .to_string();
-        let report = GripReport {
+        GripReport {
             version: env!("CARGO_PKG_VERSION").to_string(),
             target,
             overall,
             modules: self.scorer.module_stats(modules),
-        };
+        }
+    }
+
+    fn handle_output(&self, report: &GripReport) -> Result<ExitCode> {
         if let Some(min) = self.config.min_score {
-            return Ok(if grip_score >= min {
+            return Ok(if report.overall.grip_score >= min {
                 ExitCode::SUCCESS
             } else {
                 ExitCode::FAILURE
             });
         }
-        self.reporter.write(&report)?;
+        self.reporter.write(report)?;
         Ok(ExitCode::SUCCESS)
     }
 

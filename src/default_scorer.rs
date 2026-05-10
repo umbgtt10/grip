@@ -6,18 +6,20 @@ use std::collections::BTreeMap;
 
 use crate::item_counts::ItemCounts;
 use crate::module_stats::ModuleStats;
+use crate::traits::scorer::Scorer;
 
 #[derive(Debug, Clone, Default)]
-pub struct Scorer;
+pub struct DefaultScorer;
 
-impl Scorer {
+impl DefaultScorer {
     #[must_use]
     pub const fn new() -> Self {
         Self
     }
+}
 
-    #[must_use]
-    pub fn score_counts(&self, counts: &ItemCounts) -> (u32, f64, f64) {
+impl Scorer for DefaultScorer {
+    fn score_counts(&self, counts: &ItemCounts) -> (u32, f64, f64) {
         let pure_ratio = if counts.total_functions > 0 {
             counts.pure_functions as f64 / counts.total_functions as f64
         } else {
@@ -32,8 +34,7 @@ impl Scorer {
         (grip, pure_ratio, public_ratio)
     }
 
-    #[must_use]
-    pub fn agg_modules(
+    fn agg_modules(
         &self,
         files: Vec<(String, ItemCounts)>,
     ) -> (ItemCounts, BTreeMap<String, ItemCounts>) {
@@ -49,8 +50,7 @@ impl Scorer {
         (overall, modules)
     }
 
-    #[must_use]
-    pub fn module_stats(&self, modules: BTreeMap<String, ItemCounts>) -> Vec<ModuleStats> {
+    fn module_stats(&self, modules: BTreeMap<String, ItemCounts>) -> Vec<ModuleStats> {
         modules
             .into_iter()
             .map(|(path, counts)| {
