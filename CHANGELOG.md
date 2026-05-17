@@ -7,13 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased]
+## [0.2.0] — 2026-05-08
 
 ### Added
+- Phase 1: Trait boundary ratio metric
+- Method-level collection: `inherent_methods`, `local_trait_methods`, `trait_ratio`
+  in `ItemCounts`, `ModuleStats`, `OverallStats`
+- `IoCallFinder` — scans method bodies for I/O calls (TcpStream::connect,
+  fs::write, writeln!, etc.) to detect impure methods lacking `&mut self`
+- Known foreign trait exclusion list — `Display`, `Clone`, `Debug`, `Serialize`
+  and 40+ other std/crate traits excluded from counting
+- `#[test]` attribute skipping in both inherent and trait impl methods
+- N/A display for modules with zero impl methods (clarifies vs 0.0%)
+- `trait_check` fixture with 6 integration tests covering pure-inherent,
+  impure-inherent, well-seamed, foreign-only, and mixed modules
 
 ### Changed
+- Grip formula: `(pure_ratio * 0.6 + public_ratio * 0.4) * 100` →
+  `(pure_ratio * 0.4 + public_ratio * 0.3 + trait_ratio * 0.3) * 100`
+- `Scorer::score_counts` returns `(u32, f64, f64, f64)` — includes trait_ratio
+- Human-readable output adds `Trait methods:` line and `traits:` column
+- ModuleStats and OverallStats serialization includes new trait fields
 
 ### Fixed
+- `has_mut_param` now detects `&mut self` receiver (was only checking typed
+  parameters)
+- Foreign trait detection covers multi-segment paths like `serde::Serialize`
+  via last-segment check against known list
+- Pure-function heuristic expanded with I/O call detection
 
 ## [0.1.4] - 2026-05-08
 
@@ -87,7 +108,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Hello-world binary with cargo subcommand support
 - `Cargo.toml` metadata, MIT license, README placeholder
 
-[Unreleased]: https://github.com/umbgtt10/grip4rust/compare/v0.1.3...HEAD
+[0.2.0]: https://github.com/umbgtt10/grip4rust/compare/v0.1.4...v0.2.0
+[Unreleased]: https://github.com/umbgtt10/grip4rust/compare/v0.2.0...HEAD
 [0.1.3]: https://github.com/umbgtt10/grip4rust/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/umbgtt10/grip4rust/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/umbgtt10/grip4rust/compare/v0.1.0...v0.1.1

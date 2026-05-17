@@ -267,45 +267,30 @@ and must be adjusted before publishing.
 
 ## Phase 1 — Trait boundary ratio
 
-**Status:** Planned  
-**Target:** 4–6 hours  
-**Depends on:** Phase 0 complete  
-**Deliverable:** `grip` v0.2.0 on crates.io  
+**Status:** ✅ Complete  
+**Delivered:** `grip` v0.2.0  
 
-**The question Phase 1 adds:**
+**What it adds:**
 
-*"How many seams does this codebase expose for test doubles?"*
+- Method-level seam counting: inherent methods vs local trait methods
+- Foreign trait exclusion (40+ known std/crate traits + std/core/alloc prefix)
+- I/O call detection in method bodies (IoCallFinder)
+- Updated grip formula: `(pure_ratio * 0.4 + public_ratio * 0.3 + trait_ratio * 0.3) * 100`
+- Human-readable and JSON output with per-module trait ratio
+- N/A display when no impl methods exist (distinct from 0.0%)
 
-### Scope
-
-- Extend the `syn` visitor to collect:
-  - Total `impl` blocks per module
-  - `impl Trait for Type` blocks per module (trait implementations)
-  - `impl Type` blocks per module (inherent implementations)
-- Compute trait boundary ratio: `trait_impls / total_impls`
-- Update grip score formula:
-  `grip = (pure_ratio * 0.4 + public_ratio * 0.3 + trait_ratio * 0.3) * 100`
-- Add trait boundary ratio to human-readable and JSON output
-
-### Output addition
+**Metric definition:**
 
 ```
-Per module:
-  ibft/consensus   grip: 81   pure: 71.4%   pub: 18   traits: 6/9  (66.7%)
-  ibft/transport   grip: 74   pure: 78.9%   pub: 22   traits: 2/11 (18.2%)  ⚠️
+trait_ratio = local_trait_impure / (inherent_impure + local_trait_impure)
 ```
 
-The transport module having low trait ratio despite high purity is actionable:
-the functions are pure but the dependencies are concrete. Refactoring toward
-traits would raise grip without touching the logic.
+An impure method is one that takes `&mut self`, returns `()`, contains `unsafe`,
+or calls an I/O operation. Pure methods are invisible to the ratio — they don't
+need seams.
 
-### Gate
-
-- Phase 0 gate conditions still pass
-- Trait ratio appears in JSON output
-- Score changes from Phase 0 are reasonable — no module should change by more
-  than 20 points
-- Published on crates.io as `grip` v0.2.0
+**68 tests across 4 test suites:** core unit tests (55), clean_calc (4),
+sloppy_calc (3), trait_check (6).
 
 ---
 
