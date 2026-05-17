@@ -57,6 +57,36 @@ fn run_from_args_threshold_passes() {
     assert_eq!(result.unwrap(), ExitCode::SUCCESS);
 }
 
+fn fixture_path(name: &str) -> String {
+    std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("tests")
+        .join("fixtures")
+        .join(name)
+        .to_string_lossy()
+        .to_string()
+}
+
+#[test]
+fn injected_outperforms_monolith() {
+    // Arrange & Act
+    let clean = run_from_args(vec![
+        "cargo-grip4rust",
+        &fixture_path("dep_injected"),
+        "--threshold",
+        "70",
+    ]);
+    let mono = run_from_args(vec![
+        "cargo-grip4rust",
+        &fixture_path("dep_monolith"),
+        "--threshold",
+        "50",
+    ]);
+
+    // Assert
+    assert_eq!(clean.unwrap(), ExitCode::SUCCESS, "injected should score >= 70");
+    assert_ne!(mono.unwrap(), ExitCode::SUCCESS, "monolith should score < 50");
+}
+
 #[test]
 fn run_from_args_threshold_fails() {
     // Arrange

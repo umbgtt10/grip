@@ -657,6 +657,34 @@ fn hidden_dep_input_argument_not_counted() {
 }
 
 #[test]
+fn hidden_dep_print_macro_is_detected() {
+    // Arrange
+    let source = "struct Logger;\nimpl Logger {\n    pub fn log() { print!(\"hello\"); }\n}\n";
+    let dir = tempfile::tempdir().unwrap();
+    let _file = write_file(&dir, "lib.rs", source);
+
+    // Act
+    let (counts, fns) = Collector::collect(source, &_file);
+
+    // Assert
+    assert_eq!(fns[0].hidden_deps, 1, "print! should be a hidden dep");
+}
+
+#[test]
+fn hidden_dep_thread_sleep_is_detected() {
+    // Arrange
+    let source = "fn pause() { std::thread::sleep(std::time::Duration::from_secs(1)); }\n";
+    let dir = tempfile::tempdir().unwrap();
+    let _file = write_file(&dir, "lib.rs", source);
+
+    // Act
+    let (counts, fns) = Collector::collect(source, &_file);
+
+    // Assert
+    assert_eq!(fns[0].hidden_deps, 1, "thread::sleep should be a hidden dep");
+}
+
+#[test]
 fn hidden_dep_light_weight_vs_heavy() {
     // Arrange
     let source = "fn light() { println!(\"start\"); Instant::now(); }\n\
