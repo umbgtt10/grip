@@ -504,7 +504,7 @@ impl Calc {
 }
 
 #[test]
-fn hidden_dep_self_field_invocation_not_counted() {
+fn hidden_dep_self_field_trait_object_not_counted() {
     // Arrange
     let source = r#"
 struct Service {
@@ -521,5 +521,55 @@ impl Service {
     let (counts, fns) = Collector::collect(source, &_file);
 
     // Assert
-    assert_eq!(fns[0].hidden_deps, 0, "self.db.query should not be a hidden dep");
+    assert_eq!(fns[0].hidden_deps, 0, "self.db on trait object should not be a hidden dep");
+}
+
+#[test]
+fn hidden_dep_self_field_concrete_type_is_flagged() {
+    // Arrange
+    let source = r#"
+struct DataStore {
+    conn: String,
+}
+impl DataStore {
+    pub fn query(&self, sql: &str) -> String { sql.to_string() }
+}
+
+struct Service {
+    db: DataStore,
+}
+impl Service {
+    pub fn run(&self) { self.db.query("SELECT 1"); }
+}
+"#;
+    let dir = tempfile::tempdir().unwrap();
+    let _file = write_file(&dir, "lib.rs", source);
+
+    // Act
+    let (counts, fns) = Collector::collect(source, &_file);
+
+    // Assert
+    assert_eq!(fns[1].hidden_deps, 1, "self.db on concrete DataStore should be flagged");
+    assert_eq!(fns[0].hidden_deps, 0, "DataStore::query is a free impl method");
+}
+
+#[test]
+fn hidden_dep_self_field_ref_dyn_not_counted() {
+    // Arrange
+    let source = r#"
+struct Service<'a> {
+    handler: &'a dyn Handler,
+}
+impl Service<'_> {
+    pub fn handle(&self) { self.handler.process(); }
+}
+"#;
+    let dir = tempfile::tempdir().unwrap();
+    let _file = write_file(&dir, "lib.rs", source);
+
+    // Act
+    let (counts, fns) = Collector::collect(source, &_file);
+
+    // Assert
+    assert_eq!(fns[0].hidden_deps, 0, "self.handler on &dyn Handler should not be a hidden dep");
 }

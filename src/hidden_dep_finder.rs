@@ -24,11 +24,19 @@ const STD_MODULE_CALLS: &[&str] = &[
 
 pub(crate) struct HiddenDepFinder {
     pub(crate) count: usize,
+    concrete_fields: Vec<String>,
 }
 
 impl HiddenDepFinder {
     pub(crate) fn new() -> Self {
-        Self { count: 0 }
+        Self {
+            count: 0,
+            concrete_fields: Vec::new(),
+        }
+    }
+
+    pub(crate) fn set_concrete_fields(&mut self, fields: Vec<String>) {
+        self.concrete_fields = fields;
     }
 
     fn check_path(&mut self, path: &syn::Path) {
@@ -91,9 +99,25 @@ impl<'ast> Visit<'ast> for HiddenDepFinder {
             }
             syn::Expr::MethodCall(expr_method) => {
                 if let syn::Expr::Path(expr_path) = &*expr_method.receiver {
-                    let first = expr_path.path.segments.first().map(|s| s.ident.to_string());
-                    if first.as_deref() == Some("Self") {
+                    if expr_path.path.segments.len() == 1
+                        && expr_path.path.segments[0].ident == "self"
+                    {
                         return;
+                    }
+                }
+                if let syn::Expr::Field(expr_field) = &*expr_method.receiver {
+                    if let syn::Expr::Path(expr_path) = &*expr_field.base {
+                        if expr_path.path.segments.len() == 1
+                            && expr_path.path.segments[0].ident == "self"
+                        {
+                            if let syn::Member::Named(ident) = &expr_field.member {
+                                let name = ident.to_string();
+                                if self.concrete_fields.contains(&name) {
+                                    self.count += 1;
+                                    return;
+                                }
+                            }
+                        }
                     }
                 }
             }

@@ -2,6 +2,7 @@
 // Licensed under the MIT License
 // SPDX-License-Identifier: MIT
 
+use std::collections::HashMap;
 use std::path::Path;
 
 use quote::ToTokens;
@@ -11,6 +12,34 @@ use syn::{Attribute, Item, ItemFn, Visibility};
 use crate::function_info::FunctionInfo;
 use crate::item_counts::ItemCounts;
 use crate::unsafe_finder::UnsafeFinder;
+
+fn self_ty_name(ty: &syn::Type) -> String {
+    if let syn::Type::Path(type_path) = ty {
+        type_path
+            .path
+            .segments
+            .first()
+            .map(|s| s.ident.to_string())
+            .unwrap_or_default()
+    } else {
+        String::new()
+    }
+}
+
+fn is_trait_object_type(ty: &syn::Type) -> bool {
+    match ty {
+        syn::Type::TraitObject(_) => true,
+        syn::Type::Reference(r) => is_trait_object_type(&r.elem),
+        syn::Type::Path(p) => p.path.segments.iter().any(|seg| match &seg.arguments {
+            syn::PathArguments::AngleBracketed(args) => args.args.iter().any(|arg| match arg {
+                syn::GenericArgument::Type(t) => is_trait_object_type(t),
+                _ => false,
+            }),
+            _ => false,
+        }),
+        _ => false,
+    }
+}
 
 const KNOWN_FOREIGN_TRAITS: &[&str] = &[
     "Display", "Debug", "Clone", "Default", "PartialEq", "Eq",
@@ -29,6 +58,7 @@ pub struct Collector {
     counts: ItemCounts,
     functions: Vec<FunctionInfo>,
     current_file: String,
+    struct_concrete_fields: HashMap<String, Vec<String>>,
 }
 
 impl Collector {
@@ -37,6 +67,7 @@ impl Collector {
             counts: ItemCounts::default(),
             functions: Vec::new(),
             current_file: file,
+            struct_concrete_fields: HashMap::new(),
         }
     }
 
@@ -121,6 +152,15 @@ impl Collector {
             self.counts.public_structs += 1;
             self.counts.public_items += 1;
         }
+        let name = item_struct.ident.to_string();
+        let concrete: Vec<String> = item_struct
+            .fields
+            .iter()
+            .filter(|f| !is_trait_object_type(&f.ty))
+            .map(|f| f.ident.as_ref().map(|i| i.to_string()).unwrap_or_default())
+            .filter(|n| !n.is_empty())
+            .collect();
+        self.struct_concrete_fields.insert(name, concrete);
     }
 
     fn visit_trait(&mut self, item_trait: &syn::ItemTrait) {
@@ -165,7 +205,9 @@ impl Collector {
                     continue;
                 }
                 let is_pure = !self.is_impl_method_impure(method);
-                let hidden_deps = self.count_hidden_deps_in_impl_method(method);
+                let self_ty_name = self::self_ty_name(&item_impl.self_ty);
+                let concrete_fields = self.struct_concrete_fields.get(&self_ty_name).cloned().unwrap_or_default();
+                let hidden_deps = self.count_hidden_deps_in_impl_method(method, concrete_fields);
                 let has_trait_seam = is_trait_impl;
                 let contr = crate::contribution_schedule::contribution(is_pure, has_trait_seam, hidden_deps);
 
@@ -317,8 +359,9 @@ impl Collector {
         finder.count
     }
 
-    fn count_hidden_deps_in_impl_method(&self, method: &syn::ImplItemFn) -> usize {
+    fn count_hidden_deps_in_impl_method(&self, method: &syn::ImplItemFn, concrete_fields: Vec<String>) -> usize {
         let mut finder = crate::hidden_dep_finder::HiddenDepFinder::new();
+        finder.set_concrete_fields(concrete_fields);
         finder.visit_block(&method.block);
         finder.count
     }
