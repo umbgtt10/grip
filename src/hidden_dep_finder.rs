@@ -59,10 +59,6 @@ impl HiddenDepFinder {
         if first == "Self" || first == "self" {
             return;
         }
-        let last = &segments[segments.len() - 1];
-        if last == "new" {
-            return;
-        }
         if first.starts_with(|c: char| c.is_ascii_uppercase())
             && !STD_CONSTRUCTORS.contains(&first.as_str())
         {

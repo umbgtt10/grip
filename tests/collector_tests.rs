@@ -381,7 +381,7 @@ impl Service {
     let (counts, fns) = Collector::collect(source, &_file);
 
     // Assert
-    assert_eq!(fns[0].hidden_deps, 0, "MyDatabase::new is data creation, not a hidden dep");
+    assert_eq!(fns[0].hidden_deps, 1, "MyDatabase::new constructs a concrete dependency");
 }
 
 #[test]
